@@ -103,31 +103,40 @@ namespace TicketSystem.Controllers
             return Ok($"User Added Successfully {user}");
 
         }
-        //[HttpPost("{id}")]
-        //public async Task<IActionResult> UpdateTicket(EditUserDto userDto,string id)
-        //{
-        //    var userExist = await _userManager.FindByIdAsync(id);
-           
-        //    if (userExist == null)
-        //        return BadRequest("This User Does Not Exist");
-        //    var department = await _db.Departments.FindAsync(userDto.DepartmentId);
-        //    if (department == null)
-        //        return NotFound("This Department Does Not Exist");
-        //    var branch = await _db.Branches.FindAsync(userDto.AssocBranch);
-        //    if (branch == null)
-        //        return NotFound("This Branch Does Not Exist");
-        //    userExist.UserName = userDto.UserName;
-        //    userExist.Email = userDto.Email;
-        //    userExist.PhoneNumber = userDto.PhoneNumber;
-        //    userExist.AssocBranch = branch.Id;
-        //    userExist.DepartmentId = department.Id;
-        //    if(userDto.Password != null)
-        //    {
-        //        var hash = new PasswordHasher<Users>();
-        //        userExist.PasswordHash = hash.HashPassword(null, userDto.Password);
-        //    }
+        [HttpPost("{id}")]
+        public async Task<IActionResult> UpdateTicket(EditUserDto userDto, string id)
+        {
+            var userExist = await _userManager.FindByIdAsync(id);
 
+            if (userExist == null)
+                return BadRequest("This User Does Not Exist");
+            var department = await _db.Departments.FindAsync(userDto.DepartmentId);
+            if (department == null)
+                return NotFound("This Department Does Not Exist");
+            var branch = await _db.Branches.FindAsync(userDto.AssocBranch);
+            if (branch == null)
+                return NotFound("This Branch Does Not Exist");
+            userExist.UserName = userDto.UserName;
+            userExist.Email = userDto.Email;
+            userExist.PhoneNumber = userDto.PhoneNumber;
+            userExist.AssocBranch = branch.Id;
+            userExist.DepartmentId = department.Id;
+            if (userDto.Password != null)
+            {
+                var hash = new PasswordHasher<Users>();
+                userExist.PasswordHash = hash.HashPassword(null, userDto.Password);
+            }
+            await _userManager.UpdateAsync(userExist);
+            return Ok("User Updated Successfully");
 
-        //}
+        }
+        [HttpPost("[action]/{id}")]
+        public async Task<IActionResult> Delete(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null) return NotFound("This User Does Not Exist");
+            await _userManager.DeleteAsync(user);
+            return Ok("This User Deleted Successfully");
+        }
     }
 }

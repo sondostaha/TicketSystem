@@ -67,7 +67,7 @@ namespace TicketSystem.Controllers
             var ticket = await _db.Tickets.Where(x => x.UserId == user.Id).Select(x => new
             {
                 Title = x.Title,
-                //user = x.Users,
+                user = x.Users.UserName,
                 creator = x.Creators.UserName,
                 Description = x.Description,
                 ProgressIndicators = x.ProgressIndicators.ToString(),
@@ -87,7 +87,7 @@ namespace TicketSystem.Controllers
             {
                 Title = x.Title,
                 user = x.Users.UserName,
-                //creator = x.Creators,
+                creator = x.Creators.UserName,
                 Description = x.Description,
                 ProgressIndicators = x.ProgressIndicators.ToString(),
                 Status = x.Status.ToString(),
@@ -162,7 +162,7 @@ namespace TicketSystem.Controllers
             {
                 Title = x.Title,
                 user = x.Users.UserName,
-                //creator = x.Creators,
+                creator = x.Creators.UserName,
                 Description = x.Description,
                 ProgressIndicators = x.ProgressIndicators.ToString(),
                 Status = x.Status.ToString(),
