@@ -157,6 +157,7 @@ namespace TicketSystem.Controllers
         public async Task<IActionResult> GetpendingTickets()
         {
             var token = await _contextAccessor.HttpContext.GetTokenAsync("access_token");
+           
             var currentUser = await _userData.GetUserDataFromToken(token);
             var ticket = await _db.Tickets.Where(x => x.Status == Status.pending).Select(x => new
             {

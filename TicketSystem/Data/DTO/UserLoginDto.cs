@@ -11,3 +11,4 @@ namespace TicketSystem.Data.DTO
         public string Password { get; set; }
     }
 }
+ 

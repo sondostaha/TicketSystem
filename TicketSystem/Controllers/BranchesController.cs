@@ -36,12 +36,7 @@ namespace TicketSystem.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetBranch(int id)
         {
-            var branch = await _db.Branches.Where(x => x.Id == id).Select(x => new
-            {
-                Title = x.Title,
-                Address = x.Address,
-
-            }).FirstAsync();
+            var branch = await _db.Branches.FirstOrDefaultAsync(x => x.Id == id);
             if (branch == null)
                 return NotFound("This Branch Does Not Exist");
             return Ok(branch);

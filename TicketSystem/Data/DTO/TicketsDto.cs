@@ -7,8 +7,11 @@ namespace TicketSystem.Data.DTO
 
     public class TicketsDto
     {
-        [Required]
+        [Required(ErrorMessage = "User Title is required"), MaxLength(50, ErrorMessage = "{0} length must be between {2} and {1}."), MinLength(6)]
+
         public string Title { get; set; }
+        [MaxLength(500, ErrorMessage = "{0} length must be between {2} and {1}.")]
+
         public string? Description { get; set; }
 
         public string UsersId { get; set; }

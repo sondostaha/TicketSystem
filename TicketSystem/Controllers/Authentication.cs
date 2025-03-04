@@ -1,9 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Server.HttpSys;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -21,39 +24,40 @@ namespace TicketSystem.Controllers
         private readonly UserManager<Users> _userManager;
         private readonly IConfiguration _configuration;
         private readonly AppDbContext _db;
-        private readonly SignInManager<Users> _signInManager1;
-        public Authentication(UserManager<Users> userManager, IConfiguration configuration, AppDbContext db, SignInManager<Users> signInManager1)
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        public Authentication(UserManager<Users> userManager, IConfiguration configuration, AppDbContext db,IHttpContextAccessor httpContextAccessor)
         {
             _configuration = configuration;
             _userManager = userManager;
             _db = db;
-            _signInManager1 = signInManager1;
+           _httpContextAccessor = httpContextAccessor;
         }
         [HttpPost]
+        [AllowAnonymous]
+
         public async Task<IActionResult> Registiration(UserDto userDto)
         {
-            if (ModelState.IsValid)
+            var exsitUser = await _userManager.FindByEmailAsync(userDto.Email) ?? await _userManager.FindByNameAsync(userDto.UserName);
+            if (exsitUser != null)
+                return BadRequest("This User Already Exist already different Name Or Email");
+            var branch = await _db.Branches.FindAsync(userDto.AssocBranch);
+            if (branch == null)
+                return NotFound("This Branch Does Not Exist");
+            
+            var user = new Users()
             {
-                var branch = await _db.Branches.FindAsync(userDto.AssocBranch);
-                if (branch == null)
-                    return NotFound("This Branch Does Not Exist");
-                var user = new Users()
-                {
-                    UserName = userDto.UserName,
-                    Email = userDto.Email,
-                    PhoneNumber = userDto.PhoneNumber,
-                    AssocBranch = branch.Id,
-                    Status = userDto.Status,
-                };
-                var result = await _userManager.CreateAsync(user, userDto.Password);
-                if (result.Succeeded)
-                    return Ok($"Welcome {user.UserName}");
-                foreach (var error in result.Errors)
-                {
-                    ModelState.AddModelError("", error.Description);
-                }
-            }
-            return BadRequest(ModelState);
+                UserName = userDto.UserName,
+                Email = userDto.Email,
+                PhoneNumber = userDto.PhoneNumber,
+                AssocBranch =1,
+                Status = userDto.Status,
+                DepartmentId = userDto.DepartmentId,
+            };
+            var result = await _userManager.CreateAsync(user, userDto.Password);
+            if (result.Succeeded)
+                return Ok($"Welcome {user.UserName}");
+ 
+            return BadRequest(result.Errors.ToList());
         }
         [HttpPost("[action]")]
         [AllowAnonymous]
@@ -63,6 +67,11 @@ namespace TicketSystem.Controllers
             {
                 var user = await _userManager.FindByEmailAsync(userLoginDto.EmailOrName) ?? await _userManager.FindByNameAsync(userLoginDto.EmailOrName);
                 if (user == null) return NotFound("This User Does Not Exist");
+                if(await _userManager.IsLockedOutAsync(user))
+                {
+                    return Unauthorized("Your account is locked due to multiple failed login attempts. Please try again later.");
+
+                }
                 if (await _userManager.CheckPasswordAsync(user, userLoginDto.Password))
                 {
                     var claims = new List<Claim>();
@@ -90,15 +99,30 @@ namespace TicketSystem.Controllers
                     };
                     return Ok(_token);
                 }
-                return Unauthorized("The Credintials is Not Correct please Try Again Or SignUp");
+                else
+                {
+                    // Increment the failed login attempts after a failed login attempt
+                    await _userManager.AccessFailedAsync(user);
+
+                    // Check if the account is locked after the failed attempt
+                    if (await _userManager.IsLockedOutAsync(user))
+                    {
+                        return Unauthorized("Your account is locked due to multiple failed login attempts. Please try again later.");
+                    }
+
+                    return Unauthorized("The Credentials are incorrect. Please try again or sign up.");
+                }
             }
             return BadRequest(ModelState);
         }
+        [Authorize]
         [HttpPost("[action]")]
         public async Task<IActionResult> Logout()
         {
-            await _signInManager1.SignOutAsync();
-            return Ok();
+            //await _httpContextAccessor.HttpContext.SignOutAsync();
+            var token = Request.Headers["Authorization"].FirstOrDefault();
+            //if(!string.IsNullOrEmpty(token)) await _tokenBlacklistService.AddTokenToBlacklist(token);
+            return Ok("Logged out successfully.");
         }
 
     }

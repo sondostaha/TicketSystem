@@ -59,7 +59,10 @@ namespace TicketSystem.Data
                    Title = "CallCenter",
                    CreatedAt = DateTime.Now,
                });
-            
+            builder.Entity<Branches>()
+                //.Property(x => x.Title)
+                .HasIndex(x => x.Title)
+                .IsUnique();
             builder.Entity<Branches>()
                 .HasData(
                 new Branches() { Id = 1, Title = "Cirnckle1", Address = "6th of october" },

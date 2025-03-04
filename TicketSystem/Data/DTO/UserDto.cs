@@ -15,13 +15,14 @@ namespace TicketSystem.Data.DTO
        
     //}
     public class UserDto
-    {
-        [Required(ErrorMessage = "User Name is required")]
+    {//maxlen
+        [Required(ErrorMessage = "User Name is required"), MaxLength(100,ErrorMessage = "{0} length must be between {2} and {1}.")]
         public string UserName { get; set; }
-        [Required(ErrorMessage = "User Password is required")]
+        [Required(ErrorMessage = "User Password is required"), MaxLength(50, ErrorMessage = "{0} length must be between {2} and {1}."),MinLength(6)]
         public string Password { get; set; }
-        [Required(ErrorMessage = "User Email is required")]
+        [Required(ErrorMessage = "User Email is required"),EmailAddress(ErrorMessage ="This Must be a email")]
         public string Email { get; set; }
+        [MaxLength(11, ErrorMessage = "Phone cannot be more that 11"),MinLength(11),Phone]
         public string? PhoneNumber { get; set; }
         [Required(ErrorMessage = "User Branch is required")]
         public int AssocBranch { get; set; }
