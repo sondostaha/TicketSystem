@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Linq;
 using System.Linq;
@@ -29,8 +30,10 @@ namespace TicketSystem.Controllers
             _userData = userData;
             _userManager = userManager;
         }
-        [Authorize(Roles = "Admin")]
+      
         [HttpGet]
+        [EnableRateLimiting("1m")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetTickets([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
             var tickets = await _db.Tickets.Select(x => new
