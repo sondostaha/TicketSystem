@@ -16,8 +16,8 @@ namespace TicketSystem.Data.DTO
 
         public string UsersId { get; set; }
 
-        public Progress ProgressIndicators { get; set; } = Progress.One;
-        public Status Status { get; set; } = Status.pending;
+        //public Progress ProgressIndicators { get; set; } = Progress.One;
+        //public Status Status { get; set; } = Status.pending;
 
     }
 }

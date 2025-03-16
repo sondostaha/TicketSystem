@@ -34,6 +34,9 @@ namespace TicketSystem.Data
             builder.Entity<Tickets>()
                .Property(c => c.Status)
                .HasConversion(new EnumToStringConverter<Status>());
+            //builder.Entity<Tickets>()
+            //    .Property(b => b.Status)
+            //    .HasDefaultValue(Status.Created);
             builder.Entity<Tickets>()
                 .Property(v => v.CreatedAt)
                 .HasDefaultValueSql("GETDATE()");

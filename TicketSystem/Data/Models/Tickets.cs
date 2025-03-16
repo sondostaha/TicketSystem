@@ -8,7 +8,7 @@ namespace TicketSystem.Data.Models
     }
     public enum Status
     {
-        Accepted = 0, pending = 1, Rejected = 2, AwaitingReview = 3
+       Created = 0, Accepted = 1, pending = 2, Rejected = 3, AwaitingReview = 4
     }
     public class Tickets
     {

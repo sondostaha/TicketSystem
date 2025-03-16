@@ -36,6 +36,7 @@ namespace TicketSystem.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetTickets([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
+           
             var tickets = await _db.Tickets.Select(x => new
             {
                 Title = x.Title,
@@ -213,8 +214,8 @@ namespace TicketSystem.Controllers
                 Description = ticketsDto.Description,
                 UserId =  user.Id,
                 CreatorId = currentUser.Id,
-                ProgressIndicators = ticketsDto.ProgressIndicators,
-                Status = ticketsDto.Status,
+                ProgressIndicators = Progress.One,
+                Status = Status.Created,
             };
             if (currentUser.Departments.Title != user.Departments.Title && !userRole.Any(u => roleAdminAndDirector.Contains(u)))
             {
@@ -229,7 +230,7 @@ namespace TicketSystem.Controllers
 
         }
         [HttpPost("{id}")]
-        public async Task<IActionResult> UpdateTicket(TicketsDto ticketsDto,int id)
+        public async Task<IActionResult> UpdateTicket([FromForm]TicketUpdateDto ticketsDto,int id)
         {
             var ticket = await _db.Tickets.FindAsync(id);
             if (ticket == null)
@@ -251,11 +252,12 @@ namespace TicketSystem.Controllers
             {
                 ticket.Title = ticketsDto.Title ?? ticket.Title;
                 ticket.Description = ticketsDto.Description ?? ticket.Description;
-                ticket.Status = ticketsDto.Status;
-                ticket.ProgressIndicators = ticketsDto.ProgressIndicators;
+                ticket.Status = ticketsDto.Status ?? ticket.Status;
+                ticket.ProgressIndicators = ticketsDto.ProgressIndicators ?? ticket.ProgressIndicators;
                 ticket.UserId = user.Id;
                 ticket.CreatorId = currentUserData.Id;
                 ticket.UpdatedAt = DateTime.Now;
+                await _db.SaveChangesAsync();
                 return Ok("Ticket Updated Successfully");
             }
             return BadRequest(ModelState);
